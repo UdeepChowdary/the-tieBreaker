@@ -291,24 +291,63 @@ function SwotView({ data }: { data: SwotData }) {
 }
 
 function ComparisonView({ data }: { data: ComparisonData }) {
+  const maxPoints = Math.max(...data.options.map(o => o.points.length), 0);
+  const numOptions = data.options.length;
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-transparent">
-      {data.options.map((opt, i) => (
-        <div key={i} className="bg-[#12131C]/35 border border-[#1E2030]/60 rounded-3xl overflow-hidden shadow-lg shadow-black/10">
-          <div className="p-4 bg-gradient-to-r from-slate-900 to-[#12131C] text-white flex items-center justify-between border-b border-[#1E2030]/60">
+    <div className="border border-[#1E2030]/60 rounded-3xl p-5 md:p-6 bg-[#12131C]/20 flex flex-col gap-4 relative overflow-hidden">
+      {/* Subtle glowing bloom inside the comparison board */}
+      <div className="absolute top-0 left-1/4 w-72 h-72 rounded-full glow-spot-violet opacity-[0.08] pointer-events-none" />
+
+      {/* Option Headers */}
+      <div className={cn(
+        "grid gap-4 items-stretch",
+        numOptions === 2 ? "grid-cols-1 md:grid-cols-2" : `grid-cols-1 md:grid-cols-${numOptions}`
+      )}>
+        {data.options.map((opt, i) => (
+          <div key={i} className="p-4 bg-gradient-to-r from-[#12131C]/90 to-slate-950/90 text-white flex items-center justify-between border border-[#1E2030]/80 rounded-2xl shadow-lg shadow-black/20">
             <h3 className="text-xs font-extrabold tracking-widest uppercase text-white leading-none font-heading">{opt.name}</h3>
-            <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse shrink-0 ml-4" />
+            <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse shrink-0 ml-4 shadow-sm shadow-violet-400/50" />
           </div>
-          <div className="p-5 space-y-3.5">
-            {opt.points.map((p, j) => (
-              <div key={j} className="flex items-start gap-3 p-3.5 rounded-2xl bg-slate-900/30 border border-[#1E2030] hover:border-slate-800 transition-colors">
-                <div className="w-1.5 h-1.5 rounded-full bg-violet-500 mt-1.5 shrink-0" />
-                <p className="text-xs text-slate-300 leading-relaxed font-semibold">{p}</p>
-              </div>
-            ))}
+        ))}
+      </div>
+
+      {/* Point Rows aligned perfectly row-by-row */}
+      <div className="flex flex-col gap-3">
+        {Array.from({ length: maxPoints }).map((_, j) => (
+          <div 
+            key={j} 
+            className={cn(
+              "grid gap-4 items-stretch",
+              numOptions === 2 ? "grid-cols-1 md:grid-cols-2" : `grid-cols-1 md:grid-cols-${numOptions}`
+            )}
+          >
+            {data.options.map((opt, i) => {
+              const point = opt.points[j];
+              return (
+                <div 
+                  key={i} 
+                  className={cn(
+                    "flex items-start gap-3 p-4 rounded-2xl border transition-all duration-300 min-h-[4.5rem] h-full",
+                    point 
+                      ? "bg-[#12131C]/35 border-[#1E2030] hover:border-violet-500/20 hover:bg-[#151724]/75 shadow-sm shadow-black/5" 
+                      : "bg-[#12131C]/5 border-dashed border-[#1E2030]/30 opacity-40 select-none"
+                  )}
+                >
+                  {point ? (
+                    <>
+                      <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-tr from-violet-400 to-indigo-400 mt-[6px] shrink-0 shadow shadow-violet-500/50" />
+                      <p className="text-xs text-slate-300 leading-relaxed font-semibold">{point}</p>
+                    </>
+                  ) : (
+                    <span className="text-[10px] text-slate-500 italic font-mono leading-relaxed mt-0.5">No corresponding factor</span>
+                  )}
+                </div>
+              );
+            })}
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
