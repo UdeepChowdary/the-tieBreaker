@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plus, Trash2, Brain, LayoutDashboard, Menu, Sparkles, FolderLock } from 'lucide-react';
+import { Plus, Trash2, X, Brain, LayoutDashboard, Menu, Sparkles, FolderLock } from 'lucide-react';
 import { saveDecision, subscribeToDecisions, deleteDecision, updateDecisionWeights, isMockMode } from './supabaseClient';
 import { User } from '@supabase/supabase-js';
 import { Decision, AnalysisType } from './types';
