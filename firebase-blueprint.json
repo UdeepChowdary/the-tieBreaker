@@ -1,0 +1,27 @@
+{
+  "entities": {
+    "Decision": {
+      "title": "Decision",
+      "description": "A decision analysis record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "analysisType": { "type": "string", "enum": ["pros_cons", "swot", "comparison"] },
+        "analysisData": { "type": "object" },
+        "weights": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "analysisType", "analysisData", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "decisions/{decisionId}": {
+      "schema": "Decision",
+      "description": "Stored decision analyses"
+    }
+  }
+}
