@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plus, Trash2, X, Brain, LayoutDashboard, Menu } from 'lucide-react';
-import { loginWithEmail, logout, saveDecision, subscribeToDecisions, deleteDecision, updateDecisionWeights, supabase, isMockMode } from './supabaseClient';
+import { Plus, Trash2, Brain, LayoutDashboard, Menu, Sparkles, FolderLock } from 'lucide-react';
+import { saveDecision, subscribeToDecisions, deleteDecision, updateDecisionWeights, isMockMode } from './supabaseClient';
 import { User } from '@supabase/supabase-js';
 import { Decision, AnalysisType } from './types';
 import { cn } from './lib/utils';
@@ -32,14 +32,10 @@ export default function App() {
     setIsAnalyzing(true);
     setError(null);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` 
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ decision, type }),
       });
@@ -69,38 +65,42 @@ export default function App() {
     }
   };
 
-
-
   return (
-    <div className="flex h-screen bg-[#F3F4F6] font-sans text-slate-900 overflow-hidden relative">
+    <div className="flex h-screen bg-[#08090E] font-sans text-slate-100 overflow-hidden relative">
+      {/* Glow Backdrops */}
+      <div className="absolute top-[-10%] left-[-20%] w-[60%] h-[60%] rounded-full glow-spot-violet opacity-65 pointer-events-none z-0" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full glow-spot-blue opacity-40 pointer-events-none z-0" />
+
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/20 z-40 md:hidden"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden transition-all duration-300"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside className={cn(
-        "absolute md:relative z-50 h-full w-80 border-r border-slate-200 bg-white flex flex-col transition-transform duration-300",
+        "absolute md:relative z-50 h-full w-80 glass-panel border-r border-[#1E2030]/60 flex flex-col transition-transform duration-300 z-50",
         isSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       )}>
-        <div className="p-6 border-b border-slate-100">
+        <div className="p-6 border-b border-[#1E2030]/60">
           <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-slate-900 rounded flex items-center justify-center text-white font-bold shrink-0">T</div>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-gradient-to-tr from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-lg shadow-violet-600/20 shrink-0">
+                T
+              </div>
               <div className="flex flex-col">
-                <h1 className="text-lg font-bold tracking-tight leading-none text-slate-900">The Tiebreaker</h1>
+                <h1 className="text-lg font-black tracking-tight leading-none text-white">The Tiebreaker</h1>
                 {isMockMode && (
-                  <span className="inline-block self-start mt-1 text-[9px] bg-amber-50 text-amber-600 border border-amber-200/50 rounded-full px-1.5 py-0.5 font-medium tracking-wide uppercase">
+                  <span className="inline-block self-start mt-1.5 text-[8px] bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full font-extrabold tracking-wider uppercase">
                     Demo Mode
                   </span>
                 )}
               </div>
             </div>
             <button 
-              className="md:hidden p-2 text-slate-400 hover:text-slate-900 rounded-lg"
+              className="md:hidden p-2 text-slate-400 hover:text-white hover:bg-slate-900/60 rounded-xl transition-all"
               onClick={() => setIsSidebarOpen(false)}
               aria-label="Close sidebar"
             >
@@ -110,8 +110,10 @@ export default function App() {
           <button 
             onClick={() => { setSelectedId(null); setActiveTab('new'); setIsSidebarOpen(false); }}
             className={cn(
-              "w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm font-medium transition-all border",
-              activeTab === 'new' ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+              "w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-bold transition-all duration-300 border cursor-pointer",
+              activeTab === 'new' 
+                ? "bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white border-transparent shadow-lg shadow-violet-600/15 hover:scale-[1.01]" 
+                : "bg-slate-900/40 text-slate-300 border-[#1E2030] hover:bg-slate-900/80 hover:text-white"
             )}
           >
             <Plus className="w-4 h-4" />
@@ -119,11 +121,12 @@ export default function App() {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-1">
-          <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-2 mb-2">Saved Decisions</div>
+        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          <div className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest px-2 mb-2">Saved Decisions</div>
           {decisions.length === 0 ? (
-            <div className="text-xs text-slate-400 p-4 border border-dashed border-slate-200 rounded-lg text-center bg-slate-50/50">
-              No saved decisions yet. Start a new analysis to see it here!
+            <div className="text-xs text-slate-400 p-6 border border-dashed border-[#1E2030] rounded-2xl text-center bg-slate-950/20">
+              <FolderLock className="w-8 h-8 mx-auto mb-2 text-slate-600 opacity-60" />
+              <p className="leading-relaxed font-medium">No saved decisions yet.<br />Start a new analysis!</p>
             </div>
           ) : (
             decisions.map((d) => (
@@ -131,55 +134,65 @@ export default function App() {
                 key={d.id}
                 onClick={() => { setSelectedId(d.id!); setActiveTab('history'); setIsSidebarOpen(false); }}
                 className={cn(
-                  "w-full text-left p-3 rounded-lg transition-all group relative border",
-                  selectedId === d.id ? "bg-slate-50 border-slate-100 shadow-sm" : "border-transparent hover:bg-slate-50"
+                  "w-full text-left p-3.5 rounded-xl transition-all duration-200 group relative border flex flex-col gap-1 cursor-pointer",
+                  selectedId === d.id 
+                    ? "bg-[#151724]/90 border-violet-500/30 shadow-md shadow-violet-600/5" 
+                    : "border-transparent hover:bg-slate-900/40 hover:border-[#1E2030]"
                 )}
               >
-                <div className={cn("text-sm font-medium truncate pr-6", selectedId === d.id ? "text-slate-900" : "text-slate-600")}>{d.title}</div>
-                <div className="text-[10px] text-slate-400 mt-1 uppercase tracking-tight">
+                {selectedId === d.id && (
+                  <div className="absolute left-0 top-3 bottom-3 w-1 bg-gradient-to-b from-violet-500 to-indigo-500 rounded-r-full" />
+                )}
+                <div className={cn("text-xs font-semibold truncate pr-8 leading-tight", selectedId === d.id ? "text-white" : "text-slate-300 group-hover:text-white")}>
+                  {d.title}
+                </div>
+                <div className="text-[9px] font-bold text-slate-500 mt-1 uppercase tracking-wider font-mono">
                   {new Date(d.createdAt).toLocaleDateString()}
                 </div>
                 <button 
-                  className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-40 hover:!opacity-100 transition-opacity"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-60 hover:!opacity-100 hover:bg-slate-800/80 p-1.5 rounded-lg transition-all"
                   onClick={(e) => { e.stopPropagation(); deleteDecision(d.id!); if(selectedId === d.id) setSelectedId(null); }}
                   aria-label="Delete decision"
                 >
-                  <Trash2 className="w-4 h-4 text-slate-900" />
+                  <Trash2 className="w-3.5 h-3.5 text-rose-400" />
                 </button>
               </button>
             ))
           )}
         </div>
 
-        <div className="p-6 border-t border-[#141414]/10">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold shrink-0">
+        <div className="p-4 border-t border-[#1E2030]/60">
+          <div className="flex items-center gap-3 bg-slate-950/45 p-3 rounded-2xl border border-slate-900/60 shadow-inner">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-slate-800 to-slate-900 border border-slate-700/50 text-slate-300 flex items-center justify-center text-xs font-black shrink-0 relative">
               L
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 border border-slate-950">
+                <span className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-75" />
+              </span>
             </div>
             <div className="flex flex-col">
-              <div className="text-xs font-bold text-slate-800 leading-none">Local Workspace</div>
-              <span className="text-[10px] text-slate-400 mt-1 font-medium">Offline Database Active</span>
+              <div className="text-xs font-black text-white leading-none">Local Workspace</div>
+              <span className="text-[9px] text-slate-500 mt-1 font-bold tracking-tight uppercase">Offline Database</span>
             </div>
           </div>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto bg-white flex flex-col relative w-full">
+      <main className="flex-1 overflow-y-auto bg-transparent flex flex-col relative w-full z-10">
         {/* Mobile Header */}
-        <div className="md:hidden flex items-center justify-between p-4 border-b border-slate-100 sticky top-0 bg-white/80 backdrop-blur-md z-30">
+        <div className="md:hidden flex items-center justify-between p-4 border-b border-[#1E2030]/40 sticky top-0 bg-[#08090E]/80 backdrop-blur-md z-30">
           <div className="flex items-center">
             <button 
               onClick={() => setIsSidebarOpen(true)}
-              className="p-2 -ml-2 text-slate-600 hover:text-slate-900"
+              className="p-2 -ml-2 text-slate-400 hover:text-white"
               aria-label="Open sidebar"
             >
               <Menu className="w-6 h-6" />
             </button>
-            <div className="font-bold tracking-tight ml-2">The Tiebreaker</div>
+            <div className="font-black tracking-tight ml-2 text-white font-heading">The Tiebreaker</div>
           </div>
           {isMockMode && (
-            <span className="text-[9px] bg-amber-50 text-amber-600 border border-amber-200/50 rounded-full px-1.5 py-0.5 font-medium tracking-wide uppercase">
+            <span className="text-[8px] bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-full px-2 py-0.5 font-extrabold tracking-wider uppercase">
               Demo Mode
             </span>
           )}
@@ -189,17 +202,20 @@ export default function App() {
           {activeTab === 'new' ? (
             <motion.div 
               key="new"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ type: "spring", stiffness: 380, damping: 30 }}
               className="max-w-3xl mx-auto h-full flex flex-col justify-center px-4 md:px-8 py-12 md:py-0 w-full"
             >
-              <div className="mb-12">
-                <div className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center text-white mb-6">
-                  <Brain className="w-6 h-6" />
+              <div className="mb-10 text-center md:text-left flex flex-col items-center md:items-start">
+                <div className="w-14 h-14 bg-gradient-to-tr from-violet-600/10 to-indigo-600/10 border border-violet-500/20 text-violet-400 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-violet-600/5 neon-glow-violet shrink-0">
+                  <Brain className="w-7 h-7" />
                 </div>
-                <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">What's on your mind?</h2>
-                <p className="text-lg text-slate-500">Break down complex decisions with AI-powered clarity.</p>
+                <h2 className="text-3xl md:text-5xl font-black text-gradient-primary leading-tight mb-4 flex items-center gap-2">
+                  What's on your mind?
+                </h2>
+                <p className="text-sm md:text-base text-slate-400 font-medium">Break down complex life decisions with dynamic AI-powered clarity.</p>
               </div>
               <AnalysisForm onAnalyze={handleAnalyze} isLoading={isAnalyzing} error={error} />
             </motion.div>
@@ -208,7 +224,8 @@ export default function App() {
               key="history"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="h-full flex flex-col"
+              transition={{ duration: 0.25 }}
+              className="h-full flex flex-col bg-transparent"
             >
               {selectedDecision ? (
                 <DecisionResult 
@@ -216,9 +233,11 @@ export default function App() {
                   onUpdateWeights={(weights) => updateDecisionWeights(selectedDecision.id!, weights)}
                 />
               ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-slate-300">
-                  <LayoutDashboard className="w-16 h-16 mb-4 opacity-20" />
-                  <p className="text-slate-400 font-medium">Select an analysis or start a new one</p>
+                <div className="flex-1 flex flex-col items-center justify-center text-slate-500">
+                  <div className="w-16 h-16 bg-slate-900/35 rounded-2xl border border-slate-900 flex items-center justify-center text-slate-600 mb-4 opacity-75">
+                    <LayoutDashboard className="w-8 h-8" />
+                  </div>
+                  <p className="text-slate-400 font-bold text-sm tracking-tight">Select an analysis from the sidebar or start a new one</p>
                 </div>
               )}
             </motion.div>

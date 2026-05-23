@@ -1,6 +1,7 @@
 import { memo, useCallback, useState, useEffect } from 'react';
 import Markdown from 'react-markdown';
-import { History, Zap, Check, X } from 'lucide-react';
+import { History, Zap, Check, X, Shield, Cpu, Scale, Brain } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { Decision, ProsConsData, SwotData, ComparisonData, ProCon } from '../types';
 
@@ -35,21 +36,21 @@ export function DecisionResult({ decision, onUpdateWeights }: { decision: Decisi
 
   return (
     <>
-      <header className="h-16 border-b border-slate-100 flex items-center justify-between px-4 md:px-8 sticky top-0 bg-white/80 backdrop-blur-md z-10">
+      <header className="h-20 border-b border-[#1E2030]/60 flex items-center justify-between px-6 sticky top-0 bg-[#08090E]/80 backdrop-blur-md z-30">
         <div className="flex items-center gap-4 truncate">
-          <h2 className="text-sm md:text-lg font-bold tracking-tight truncate">{decision.title}</h2>
-          <span className="hidden sm:inline-block px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold uppercase rounded tracking-wide shrink-0">
+          <h2 className="text-base md:text-xl font-black text-white tracking-tight truncate leading-none">{decision.title}</h2>
+          <span className="hidden sm:inline-block px-3 py-1 bg-violet-500/10 border border-violet-500/20 text-violet-400 text-[9px] font-extrabold uppercase rounded-full tracking-wider shrink-0">
             {decision.analysisType.replace('_', ' ')}
           </span>
         </div>
-        <div className="text-[10px] md:text-xs text-slate-400 font-medium shrink-0 ml-4">
+        <div className="text-[10px] font-bold font-mono text-slate-400 bg-slate-900 border border-[#1E2030] px-2.5 py-1.5 rounded-xl uppercase tracking-wider shrink-0 ml-4">
           {formatDate(decision.createdAt)}
         </div>
       </header>
       
-      <div className="flex-1 p-4 md:p-8 overflow-y-auto">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8">
-          <div className="md:col-span-8 space-y-8">
+      <div className="flex-1 p-5 md:p-8 overflow-y-auto z-10 bg-transparent">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="lg:col-span-8 space-y-8">
             {decision.analysisType === 'pros_cons' && (
               <ProsConsView data={decision.analysisData as ProsConsData} weights={weights} onChangeWeight={handleWeightChange} />
             )}
@@ -60,22 +61,33 @@ export function DecisionResult({ decision, onUpdateWeights }: { decision: Decisi
               <ComparisonView data={decision.analysisData as ComparisonData} />
             )}
 
-            <div className="p-4 md:p-6 border border-slate-100 rounded-2xl bg-white shadow-sm flex flex-col gap-4">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">AI Insight</h3>
-              <div className="text-sm leading-relaxed text-slate-600 prose prose-slate max-w-none">
+            <div className="p-6 border border-[#1E2030]/60 rounded-3xl bg-[#12131C]/45 backdrop-blur-md shadow-lg shadow-black/10 flex flex-col gap-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 rounded-full glow-spot-violet opacity-25 pointer-events-none" />
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-6 h-6 bg-violet-600/10 border border-violet-500/20 text-violet-400 rounded-lg flex items-center justify-center shrink-0">
+                  <Brain className="w-3.5 h-3.5" />
+                </div>
+                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">AI Insight</h3>
+              </div>
+              <div className="text-sm leading-relaxed text-slate-300 prose prose-invert max-w-none prose-sm prose-p:leading-relaxed">
                 <Markdown>{(decision.analysisData as any).summary || (decision.analysisData as any).conclusion}</Markdown>
               </div>
             </div>
           </div>
 
-          <div className="md:col-span-4 flex flex-col gap-6">
+          <div className="lg:col-span-4 flex flex-col gap-6 sticky top-28">
             {decision.analysisType === 'pros_cons' && (
               <TotalScore weights={weights} data={decision.analysisData as ProsConsData} />
             )}
             
-            <div className="p-6 border border-slate-100 rounded-2xl bg-slate-50/30 flex flex-col gap-2">
-              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Meta Info</h3>
-              <p className="text-xs text-slate-500">Analysis conducted using Gemini AI models. Individual weights were manually adjusted by the user to reflect personal priorities.</p>
+            <div className="p-5 border border-[#1E2030]/60 rounded-2xl bg-[#12131C]/20 flex flex-col gap-2.5">
+              <div className="flex items-center gap-1.5">
+                <Cpu className="w-3.5 h-3.5 text-slate-500" />
+                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Meta Info</h3>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-relaxed font-medium">
+                Analysis conducted using real-time Gemini AI models. Individual weights were manually adjusted locally to reflect personal priorities.
+              </p>
             </div>
           </div>
         </div>
@@ -86,10 +98,13 @@ export function DecisionResult({ decision, onUpdateWeights }: { decision: Decisi
 
 const ProsConsView = memo(function ProsConsView({ data, weights, onChangeWeight }: { data: ProsConsData, weights: Record<string, number>, onChangeWeight: (k: string, v: number) => void }) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <div className="space-y-4">
-        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Pros</h3>
-        <div className="space-y-2">
+        <div className="flex items-center gap-2 px-1">
+          <Scale className="w-4 h-4 text-emerald-400" />
+          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Pros</h3>
+        </div>
+        <div className="space-y-3">
           {data.pros.map(p => (
             <PointCard 
               key={p.id} 
@@ -102,8 +117,11 @@ const ProsConsView = memo(function ProsConsView({ data, weights, onChangeWeight 
         </div>
       </div>
       <div className="space-y-4">
-        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Cons</h3>
-        <div className="space-y-2">
+        <div className="flex items-center gap-2 px-1">
+          <Scale className="w-4 h-4 text-rose-400 rotate-180" />
+          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Cons</h3>
+        </div>
+        <div className="space-y-3">
           {data.cons.map(c => (
             <PointCard 
               key={c.id} 
@@ -121,24 +139,44 @@ const ProsConsView = memo(function ProsConsView({ data, weights, onChangeWeight 
 
 const PointCard = memo(function PointCard({ point, weight, onChange, type }: { point: ProCon, weight: number, onChange: (v: number) => void, type: 'pro' | 'con' }) {
   return (
-    <div className="p-3 border border-slate-100 rounded-lg bg-white flex flex-col gap-2 hover:border-slate-300 transition-colors">
-      <div className="flex justify-between items-center">
-        <span className="text-sm font-medium text-slate-900">{point.text}</span>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-slate-50 p-0.5 rounded border border-slate-100">
-            <button aria-label="Decrease weight" onClick={() => onChange(Math.max(1, weight - 1))} className="w-6 h-6 sm:w-5 sm:h-5 flex items-center justify-center text-xs hover:bg-white rounded transition-colors">-</button>
-            <span className="font-mono text-[10px] w-4 text-center font-bold">W:{weight}</span>
-            <button aria-label="Increase weight" onClick={() => onChange(Math.min(5, weight + 1))} className="w-6 h-6 sm:w-5 sm:h-5 flex items-center justify-center text-xs hover:bg-white rounded transition-colors">+</button>
+    <div className={cn(
+      "p-4 border rounded-2xl bg-[#12131C]/35 flex flex-col gap-2.5 transition-all duration-300 hover:bg-[#151724]/75 relative overflow-hidden group",
+      type === 'pro' ? "border-[#1E2030] hover:border-emerald-500/20" : "border-[#1E2030] hover:border-rose-500/20"
+    )}>
+      {type === 'pro' ? (
+        <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-emerald-500/30 group-hover:bg-emerald-500 transition-colors" />
+      ) : (
+        <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-rose-500/30 group-hover:bg-rose-500 transition-colors" />
+      )}
+      <div className="flex justify-between items-start gap-4">
+        <span className="text-sm font-bold text-white leading-snug">{point.text}</span>
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 bg-slate-900 border border-[#1E2030] p-1 rounded-xl shadow-inner">
+            <button 
+              aria-label="Decrease weight" 
+              onClick={() => onChange(Math.max(1, weight - 1))} 
+              className="w-5 h-5 flex items-center justify-center text-xs text-slate-400 hover:text-white hover:bg-slate-800 rounded-md font-extrabold cursor-pointer transition-colors"
+            >
+              -
+            </button>
+            <span className="font-mono text-[9px] w-5 text-center font-bold text-slate-300">W:{weight}</span>
+            <button 
+              aria-label="Increase weight" 
+              onClick={() => onChange(Math.min(5, weight + 1))} 
+              className="w-5 h-5 flex items-center justify-center text-xs text-slate-400 hover:text-white hover:bg-slate-800 rounded-md font-extrabold cursor-pointer transition-colors"
+            >
+              +
+            </button>
           </div>
           <span className={cn(
-            "px-2 py-0.5 text-[10px] font-bold rounded",
-            type === 'pro' ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"
+            "px-2 py-1 text-[9px] font-black rounded-lg shrink-0 select-none shadow-sm uppercase font-mono tracking-wider",
+            type === 'pro' ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
           )}>
             {type === 'pro' ? '+' : '-'}{weight}
           </span>
         </div>
       </div>
-      <p className="text-xs text-slate-500 leading-relaxed">{point.explanation}</p>
+      <p className="text-xs text-slate-400 leading-relaxed font-medium">{point.explanation}</p>
     </div>
   );
 });
@@ -149,18 +187,42 @@ export const TotalScore = memo(function TotalScore({ weights, data }: { weights:
   const diff = proScore - conScore;
 
   return (
-    <div className="bg-slate-900 rounded-2xl p-6 md:p-8 text-white h-full flex flex-col justify-center items-center text-center">
-      <div className="text-[11px] uppercase tracking-[0.2em] opacity-60 mb-2">Calculated Tiebreaker</div>
-      <div className="text-6xl font-light mb-2">{diff > 0 ? `+${diff}` : diff}</div>
-      <div className="h-1 w-full bg-slate-800 rounded-full mt-4 overflow-hidden">
+    <div className={cn(
+      "rounded-3xl p-6 md:p-8 text-white flex flex-col justify-center items-center text-center relative overflow-hidden border",
+      diff > 0 
+        ? "bg-gradient-to-br from-[#12131C] to-[#0A1A14] border-emerald-500/15 neon-glow-emerald" 
+        : diff < 0 
+          ? "bg-gradient-to-br from-[#12131C] to-[#1C0A0D] border-rose-500/15 neon-glow-rose" 
+          : "bg-[#12131C] border-[#1E2030] neon-glow-violet"
+    )}>
+      {/* Light Blooms inside card */}
+      {diff > 0 && <div className="absolute inset-0 glow-spot-emerald opacity-20 pointer-events-none" />}
+      {diff < 0 && <div className="absolute inset-0 glow-spot-rose opacity-20 pointer-events-none" />}
+
+      <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 z-10 select-none">
+        Tiebreaker Score
+      </div>
+      <motion.div 
+        key={diff}
+        initial={{ scale: 0.9, opacity: 0.6 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 400, damping: 20 }}
+        className={cn(
+          "text-6xl md:text-7xl font-black mb-3 tracking-tight select-none z-10 leading-none",
+          diff > 0 ? "text-emerald-400" : diff < 0 ? "text-rose-400" : "text-violet-400"
+        )}
+      >
+        {diff > 0 ? `+${diff}` : diff}
+      </motion.div>
+      <div className="h-1.5 w-full bg-slate-950 rounded-full mt-4 overflow-hidden z-10 border border-[#1E2030]/20 flex">
         <div 
-          className={cn("h-full transition-all duration-1000", diff >= 0 ? "bg-green-500" : "bg-red-500")} 
+          className={cn("h-full transition-all duration-1000", diff >= 0 ? "bg-emerald-500 shadow-md shadow-emerald-500/20" : "bg-rose-500 shadow-md shadow-rose-500/20")} 
           style={{ width: `${Math.min(100, (Math.abs(diff) / Math.max(proScore, conScore, 1)) * 100)}%` }}
         />
       </div>
-      <div className="mt-6 text-sm text-slate-400 leading-relaxed">
+      <div className="mt-6 text-xs text-slate-400 leading-relaxed font-semibold z-10">
         {diff > 0 
-          ? "The pros marginally outweigh the cons when adjusted for your priority weighting." 
+          ? "The pros outweigh the cons when adjusted for your priority weighting." 
           : diff < 0 
             ? "The cons outweigh the pros based on your current priorities." 
             : "The analysis is perfectly balanced at the moment."}
@@ -171,25 +233,54 @@ export const TotalScore = memo(function TotalScore({ weights, data }: { weights:
 
 function SwotView({ data }: { data: SwotData }) {
   const sections = [
-    { title: 'Strengths', data: data.strengths, icon: Check },
-    { title: 'Weaknesses', data: data.weaknesses, icon: X },
-    { title: 'Opportunities', data: data.opportunities, icon: Zap },
-    { title: 'Threats', data: data.threats, icon: History },
+    { title: 'Strengths', data: data.strengths, icon: Check, color: 'emerald' },
+    { title: 'Weaknesses', data: data.weaknesses, icon: X, color: 'rose' },
+    { title: 'Opportunities', data: data.opportunities, icon: Zap, color: 'cyan' },
+    { title: 'Threats', data: data.threats, icon: History, color: 'amber' },
   ];
 
   return (
-    <div className="border border-slate-100 rounded-xl p-4 md:p-6 bg-slate-50/50">
-      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">SWOT Analysis</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+    <div className="border border-[#1E2030]/60 rounded-3xl p-5 md:p-6 bg-[#12131C]/20">
+      <div className="flex items-center gap-2 mb-5 px-1">
+        <Shield className="w-4 h-4 text-violet-400" />
+        <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">SWOT Analysis</h3>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-medium">
         {sections.map(s => (
-          <div key={s.title} className="p-3 bg-white border border-slate-100 rounded-md shadow-sm">
-            <div className="font-bold mb-1 flex items-center gap-2">
-              <s.icon className="w-3 h-3 opacity-40" />
-              {s.title}
+          <div 
+            key={s.title} 
+            className={cn(
+              "p-4 border rounded-2xl bg-[#12131C]/35 relative group",
+              s.color === 'emerald' ? "border-[#1E2030] hover:border-emerald-500/15" :
+              s.color === 'rose' ? "border-[#1E2030] hover:border-rose-500/15" :
+              s.color === 'cyan' ? "border-[#1E2030] hover:border-cyan-500/15" :
+              "border-[#1E2030] hover:border-amber-500/15"
+            )}
+          >
+            <div className="font-extrabold mb-3.5 flex items-center gap-2 text-white">
+              <div className={cn(
+                "w-5 h-5 rounded-lg flex items-center justify-center shrink-0 border",
+                s.color === 'emerald' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" :
+                s.color === 'rose' ? "bg-rose-500/10 border-rose-500/20 text-rose-400" :
+                s.color === 'cyan' ? "bg-cyan-500/10 border-cyan-500/20 text-cyan-400" :
+                "bg-amber-500/10 border-amber-500/20 text-amber-400"
+              )}>
+                <s.icon className="w-3 h-3" />
+              </div>
+              <span className="tracking-wide uppercase text-[10px]">{s.title}</span>
             </div>
-            <ul className="space-y-1">
+            <ul className="space-y-2">
               {s.data.map((item, i) => (
-                <li key={i} className="text-slate-600">• {item}</li>
+                <li key={i} className="text-slate-300 text-xs flex items-start gap-2 leading-relaxed">
+                  <span className={cn(
+                    "text-xs leading-none mt-1 font-bold select-none shrink-0",
+                    s.color === 'emerald' ? "text-emerald-500" :
+                    s.color === 'rose' ? "text-rose-500" :
+                    s.color === 'cyan' ? "text-cyan-500" :
+                    "text-amber-500"
+                  )}>•</span>
+                  <span>{item}</span>
+                </li>
               ))}
             </ul>
           </div>
@@ -201,18 +292,18 @@ function SwotView({ data }: { data: SwotData }) {
 
 function ComparisonView({ data }: { data: ComparisonData }) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-transparent">
       {data.options.map((opt, i) => (
-        <div key={i} className="bg-white border border-slate-100 rounded-xl overflow-hidden shadow-sm">
-          <div className="p-4 bg-slate-900 text-white flex items-center justify-between">
-            <h3 className="text-sm font-bold tracking-tight uppercase tracking-wider">{opt.name}</h3>
-            <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+        <div key={i} className="bg-[#12131C]/35 border border-[#1E2030]/60 rounded-3xl overflow-hidden shadow-lg shadow-black/10">
+          <div className="p-4 bg-gradient-to-r from-slate-900 to-[#12131C] text-white flex items-center justify-between border-b border-[#1E2030]/60">
+            <h3 className="text-xs font-extrabold tracking-widest uppercase text-white leading-none font-heading">{opt.name}</h3>
+            <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse shrink-0 ml-4" />
           </div>
-          <div className="p-6 space-y-3">
+          <div className="p-5 space-y-3.5">
             {opt.points.map((p, j) => (
-              <div key={j} className="flex items-start gap-3 p-3 rounded-lg bg-slate-50 border border-slate-100">
-                <div className="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0" />
-                <p className="text-xs text-slate-600 leading-relaxed font-medium">{p}</p>
+              <div key={j} className="flex items-start gap-3 p-3.5 rounded-2xl bg-slate-900/30 border border-[#1E2030] hover:border-slate-800 transition-colors">
+                <div className="w-1.5 h-1.5 rounded-full bg-violet-500 mt-1.5 shrink-0" />
+                <p className="text-xs text-slate-300 leading-relaxed font-semibold">{p}</p>
               </div>
             ))}
           </div>
